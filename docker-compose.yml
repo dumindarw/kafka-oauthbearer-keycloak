@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+
+  zookeeper:
+    image: strimzi/kafka:0.11.3-kafka-2.1.0
+    command: [
+      "sh", "-c",
+      "bin/zookeeper-server-start.sh config/zookeeper.properties"
+    ]
+    ports:
+      - 2181:2181
+    environment:
+      LOG_DIR: /tmp/logs
+
+  kafka:
+    image: strimzi/kafka:0.11.3-kafka-2.1.0
+    command: [
+      "sh", "-c",
+      "bin/kafka-server-start.sh config/server.properties"
+    ]
+    volumes:
+      - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf 
+      - ./producer.properties:/opt/kafka/config/producer.properties
+      - ./consumer.properties:/opt/kafka/config/consumer.properties
+      - ./server.properties:/opt/kafka/config/server.properties
+      - ./kafka-oauth-1.0.0.jar:/opt/kafka/libs/kafka-oauth-1.0.0.jar
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment:
+      LOG_DIR: "/tmp/logs"
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf"
+      #     KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://localhost:9092
+      #      KAFKA_LISTENERS: SASL_PLAINTEXT://0.0.0.0:9092
+      #      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      #      INTER_BROKER_PROTOCOL: SASL_PLAINTEXT
+      #      SASL_MECHANISMS: OAUTHBEARER
+      #      LOGIN_CALLBACK_HANDLER: com.mcmedisoft.security.oauthbearer.OauthAuthenticateLoginCallbackHandler
+      #      SERVER_CALLBACK_HANDLER: com.mcmedisoft.security.oauthbearer.OauthAuthenticateValidatorCallbackHandler
+      #      SASL_LOGIN_CALLBACK_HANDLER: com.mcmedisoft.security.oauthbearer.OauthAuthenticateLoginCallbackHandler
+      #      SASL_SERVER_CALLBACK_HANDLER: com.mcmedisoft.security.oauthbearer.OauthAuthenticateValidatorCallbackHandler
+     
