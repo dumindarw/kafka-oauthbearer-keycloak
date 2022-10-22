@@ -28,7 +28,7 @@ public class OauthHttpCalls {
 
     public static void acceptUnsecureServer(){
 
-        if(getPropertyValueByKey("OAUTH_ACCEPT_UNSECURE_SERVER").equals(true)){
+        if(getPropertyValueByKey("OAUTH_ACCEPT_UNSECURE_SERVER").equals("true")){
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
                         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -54,7 +54,7 @@ public class OauthHttpCalls {
         }
     }
 
-    public static OauthBearerTokenJwt login(String clientId) {
+    public static OauthBearerTokenJwt login() {
 
         getPropertyValueByKey("OAUTH_LOGIN_GRANT_TYPE");
         OauthBearerTokenJwt result = null;
@@ -63,15 +63,16 @@ public class OauthHttpCalls {
             long callTime = time.milliseconds();
 
             //Mount POST data
-            String grantType = "grant_type=" + getPropertyValueByKey("OAUTH_LOGIN_GRANT_TYPE");
-            String scope = "scope=" + getPropertyValueByKey("OAUTH_LOGIN_SCOPE");
+            String clientId = "client_id=" + getPropertyValueByKey("OAUTH_CLIENT_ID");
+            String clientSecret = "client_secret=" + getPropertyValueByKey("OAUTH_CLIENT_SECRET");
             String username = "username="+ getPropertyValueByKey("USER");
             String password = "password="+ getPropertyValueByKey("PASS");
-            String postDataStr = username+ "&" + password+ "&" + grantType + "&" + scope;
-
-            log.info("Try to login with oauth!");
+            String grantType = "grant_type=" + getPropertyValueByKey("OAUTH_LOGIN_GRANT_TYPE");
+            String scope = "scope=" + getPropertyValueByKey("OAUTH_LOGIN_SCOPE");
+            String postDataStr = clientSecret + "&" + clientId + "&" + username+ "&" + password+ "&" + grantType + "&" + scope;
+            
             Map<String, Object> resp = null;
-            if(getPropertyValueByKey("OAUTH_WITH_SSL").equals(true)){
+            if(getPropertyValueByKey("OAUTH_WITH_SSL").equals("true")){
                 resp = doHttpsCall(getPropertyValueByKey("OAUTH_LOGIN_SERVER") +
                         getPropertyValueByKey("OAUTH_LOGIN_ENDPOINT"), postDataStr,
                         getPropertyValueByKey("OAUTH_LOGIN_AUTHORIZATION"));
@@ -99,15 +100,18 @@ public class OauthHttpCalls {
         OauthBearerTokenJwt result = null;
         try {
             String token = "token=" +  accessToken;
-
+            String clientId = "client_id=" + getPropertyValueByKey("OAUTH_CLIENT_ID");
+            String clientSecret = "client_secret=" + getPropertyValueByKey("OAUTH_CLIENT_SECRET");
+            String username = "username="+ getPropertyValueByKey("USER");
+            String postDataStr = clientId + "&" + clientSecret + "&" + username+ "&" + token;
             Map<String, Object> resp = null;
-            if(getPropertyValueByKey("OAUTH_WITH_SSL").equals(true)){
+            if(getPropertyValueByKey("OAUTH_WITH_SSL").equals("true")){
                 resp = doHttpsCall(getPropertyValueByKey("OAUTH_INTROSPECT_SERVER") +
-                        getPropertyValueByKey("OAUTH_INTROSPECT_ENDPOINT"), token,
+                        getPropertyValueByKey("OAUTH_INTROSPECT_ENDPOINT"), postDataStr,
                         getPropertyValueByKey("OAUTH_INTROSPECT_AUTHORIZATION"));
             }else{
                 resp = doHttpCall(getPropertyValueByKey("OAUTH_INTROSPECT_SERVER") +
-                        getPropertyValueByKey("OAUTH_INTROSPECT_ENDPOINT"), token,
+                        getPropertyValueByKey("OAUTH_INTROSPECT_ENDPOINT"), postDataStr,
                         getPropertyValueByKey("OAUTH_INTROSPECT_AUTHORIZATION"));
 
             }
@@ -173,13 +177,14 @@ public class OauthHttpCalls {
             int postDataLength = postData.length;
 
             URL url = new URL("https://" + urlStr);
+            log.info("HTTPS call = https://" + urlStr);
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
             con.setInstanceFollowRedirects(true);
             con.setRequestMethod("POST");
             con.setRequestProperty("Authorization", oauthToken);
             con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             con.setRequestProperty("charset", "utf-8");
-            con.setRequestProperty("Content-Length", Integer.toString(postDataLength ));
+            con.setRequestProperty("Content-Length", Integer.toString(postDataLength));
             con.setUseCaches(false);
             con.setDoOutput(true);
 
