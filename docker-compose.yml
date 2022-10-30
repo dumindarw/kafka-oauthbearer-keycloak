@@ -1,9 +1,9 @@
-version: '3'
+version: '3.5'
 
 services:
 
   zookeeper:
-    image: strimzi/kafka:0.11.3-kafka-2.1.0
+    image: quay.io/strimzi/kafka:0.30.0-kafka-3.2.0
     command: [
       "sh", "-c",
       "bin/zookeeper-server-start.sh config/zookeeper.properties"
@@ -14,7 +14,7 @@ services:
       LOG_DIR: /tmp/logs
 
   kafka:
-    image: strimzi/kafka:0.11.3-kafka-2.1.0
+    image: quay.io/strimzi/kafka:0.30.0-kafka-3.2.0
     command: [
       "sh", "-c",
       "bin/kafka-server-start.sh config/server.properties"
@@ -41,4 +41,19 @@ services:
       #      SERVER_CALLBACK_HANDLER: com.mcmedisoft.security.oauthbearer.OauthAuthenticateValidatorCallbackHandler
       #      SASL_LOGIN_CALLBACK_HANDLER: com.mcmedisoft.security.oauthbearer.OauthAuthenticateLoginCallbackHandler
       #      SASL_SERVER_CALLBACK_HANDLER: com.mcmedisoft.security.oauthbearer.OauthAuthenticateValidatorCallbackHandler
+
+  keycloak-dev:
+    image: quay.io/keycloak/keycloak:19.0.3
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+    command: [
+      "sh", "-c", 
+      "start-dev",
+      "import --file /tmp/kafka-authbearer.json"
+    ]
+    volumes:
+      - ./kafka-authbearer.json:/tmp/kafka-authbearer.json 
+    ports:
+      - 8080:8080
      
