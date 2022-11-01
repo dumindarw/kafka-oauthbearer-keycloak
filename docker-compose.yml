@@ -16,15 +16,15 @@ services:
   kafka:
     image: quay.io/strimzi/kafka:0.30.0-kafka-3.2.0
     command: [
-      "sh", "-c",
-      "bin/kafka-server-start.sh config/server.properties"
+      "/tmp/wait-for-keycloak.sh"
     ]
     volumes:
+      - ./wait-for-keycloak.sh:/tmp/wait-for-keycloak.sh
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf 
       - ./producer.properties:/opt/kafka/config/producer.properties
       - ./consumer.properties:/opt/kafka/config/consumer.properties
       - ./server.properties:/opt/kafka/config/server.properties
-      - ./kafka-oauth-1.0.0.jar:/opt/kafka/libs/kafka-oauth-1.0.0.jar
+      - ./custom-oauthbearer/target/kafka-oauth-1.0.0.jar:/opt/kafka/libs/kafka-oauth-1.0.0.jar
     depends_on:
       - zookeeper
     ports:
@@ -48,12 +48,11 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin123
     command: [
-      "sh", "-c", 
       "start-dev",
-      "import --file /tmp/kafka-authbearer.json"
+      "--import-realm --health-enabled=true --metrics-enabled=true"
     ]
     volumes:
-      - ./kafka-authbearer.json:/tmp/kafka-authbearer.json 
+      - ./kafka-authbearer.json:/opt/keycloak/data/import/realm.json
     ports:
       - 8080:8080
      
