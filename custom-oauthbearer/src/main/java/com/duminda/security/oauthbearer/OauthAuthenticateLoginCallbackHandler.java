@@ -66,7 +66,7 @@ public class OauthAuthenticateLoginCallbackHandler implements AuthenticateCallba
             throw new IllegalArgumentException("Callback had a token already");
 
         log.info("Try to acquire token!");
-        OauthBearerTokenJwt token = OauthHttpCalls.login(null);
+        OauthBearerTokenJwt token = OauthHttpCalls.login();
         log.info("Retrieved token..");
         if(token == null){
             throw new IllegalArgumentException("Null token returned from server");
